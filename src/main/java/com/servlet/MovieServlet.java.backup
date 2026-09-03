@@ -1,0 +1,174 @@
+// src/main/java/com/servlet/MovieServlet.java
+package com.servlet;
+
+import com.dao.MovieDAO;
+import com.entity.Movie;
+import javax.servlet.*;
+import javax.servlet.http.*;
+import javax.servlet.annotation.*;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+@WebServlet("//MovieServlet")
+public class MovieServlet extends HttpServlet {
+    private MovieDAO movieDAO = new MovieDAO();
+    
+    @Override
+ // com.servlet.MovieServlet.java 中的doGet方法
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        String action = request.getParasmeter("action");
+        if (action == null) {
+            action = "list";  // 默认显示列表
+        }
+        
+        try {
+            MovieDAO movieDAO = new MovieDAO();
+            
+            switch (action) {
+                case "list":
+                    // 获取所有电影列表
+                    List<Movie> movies = movieDAO.getAllMovies();  // 这里调用
+                    request.setAttribute("movies", movies);
+                    request.getRequestDispatcher("/movie_list.jsp").forward(request, response);
+                    break;
+                    
+                case "view":
+                    int id = Integer.parseInt(request.getParameter("id"));
+                    Movie movie = movieDAO.getMovieById(id);
+                    request.setAttribute("movie", movie);
+                    request.getRequestDispatcher("/movie_view.jsp").forward(request, response);
+                    break;
+                    
+                // 其他case...
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "服务器错误：" + e.getMessage());
+        }
+    }
+    
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
+        
+        String action = request.getParameter("action");
+        
+        if ("add".equals(action)) {
+            addMovie(request, response);
+        } else if ("update".equals(action)) {
+            updateMovie(request, response);
+        }
+    }
+    
+    // 显示电影列表
+    private void listMovies(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        List<Movie> movies = movieDAO.getAllMovies();
+        request.setAttribute("movieList", movies);
+        request.getRequestDispatcher("/no-jstl.jsp").forward(request, response);
+    }
+    // 查看电影详情
+    private void viewMovie(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        Movie movie = movieDAO.getMovieById(id);
+        request.setAttribute("movie", movie);
+        request.getRequestDispatcher("/movie-detail.jsp").forward(request, response);
+    }
+    
+    // 显示添加表单
+    private void showAddForm(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        request.getRequestDispatcher("/add-movie.jsp").forward(request, response);
+    }
+    
+    // 显示编辑表单
+    private void showEditForm(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        Movie movie = movieDAO.getMovieById(id);
+        request.setAttribute("movie", movie);
+        request.getRequestDispatcher("/edit-movie.jsp").forward(request, response);
+    }
+    
+    // 添加电影
+    private void addMovie(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        try {
+            Movie movie = new Movie();
+            movie.setMovieName(request.getParameter("movieName"));
+            movie.setType(request.getParameter("type"));
+            movie.setDuration(Integer.parseInt(request.getParameter("duration")));
+            movie.setDirector(request.getParameter("director"));
+            movie.setActor(request.getParameter("actor"));
+            
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            movie.setReleaseDate(sdf.parse(request.getParameter("releaseDate")));
+            
+            movie.setStatus(Integer.parseInt(request.getParameter("status")));
+            movie.setDescription(request.getParameter("description"));
+            
+            boolean success = movieDAO.addMovie(movie);
+            
+            if (success) {
+                response.sendRedirect("movie?action=list");
+            } else {
+                request.setAttribute("error", "添加电影失败！");
+                request.getRequestDispatcher("/add-movie.jsp").forward(request, response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "数据格式错误！");
+            request.getRequestDispatcher("/add-movie.jsp").forward(request, response);
+        }
+    }
+    
+    // 更新电影
+    private void updateMovie(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        try {
+            Movie movie = new Movie();
+            movie.setId(Integer.parseInt(request.getParameter("id")));
+            movie.setMovieName(request.getParameter("movieName"));
+            movie.setType(request.getParameter("type"));
+            movie.setDuration(Integer.parseInt(request.getParameter("duration")));
+            movie.setDirector(request.getParameter("director"));
+            movie.setActor(request.getParameter("actor"));
+            
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            movie.setReleaseDate(sdf.parse(request.getParameter("releaseDate")));
+            
+            movie.setStatus(Integer.parseInt(request.getParameter("status")));
+            movie.setDescription(request.getParameter("description"));
+            
+            boolean success = movieDAO.updateMovie(movie);
+            
+            if (success) {
+                response.sendRedirect("movie?action=list");
+            } else {
+                request.setAttribute("error", "更新电影失败！");
+                request.getRequestDispatcher("/edit-movie.jsp").forward(request, response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "数据格式错误！");
+            request.getRequestDispatcher("/edit-movie.jsp").forward(request, response);
+        }
+    }
+    
+    // 删除电影
+    private void deleteMovie(HttpServletRequest request, HttpServletResponse response) 
+            throws IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        movieDAO.deleteMovie(id);
+        response.sendRedirect("movie?action=list");
+    }
+}

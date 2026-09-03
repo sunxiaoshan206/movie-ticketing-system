@@ -1,0 +1,118 @@
+package com.servlet;
+
+import com.dao.UserDAO;
+import com.entity.User;
+import javax.servlet.*;
+import javax.servlet.http.*;
+import javax.servlet.annotation.*;
+import java.io.IOException;
+
+@WebServlet("/UserServlet")
+public class UserServlet extends HttpServlet {
+    private UserDAO userDAO = new UserDAO();
+    
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String action = request.getParameter("action");
+        
+        if (action == null) {
+            action = "loginPage";
+        }
+        
+        try {
+            switch (action) {
+                case "loginPage":
+                    showLoginPage(request, response);
+                    break;
+                case "registerPage":
+                    showRegisterPage(request, response);
+                    break;
+                case "logout":
+                    logout(request, response);
+                    break;
+                case "login":
+                    processLogin(request, response);
+                    break;
+                case "register":
+                    processRegister(request, response);
+                    break;
+                default:
+                    showLoginPage(request, response);
+            }
+        } catch (Exception e) {
+            throw new ServletException(e);
+        }
+    }
+    
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        doGet(request, response);
+    }
+    
+    private void showLoginPage(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        request.getRequestDispatcher("/pages/user/login.jsp").forward(request, response);
+    }
+    
+    private void showRegisterPage(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        request.getRequestDispatcher("/pages/user/register.jsp").forward(request, response);
+    }
+    
+    private void processLogin(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        
+        User user = userDAO.login(username, password);
+        
+        if (user != null) {
+            // 保存用户信息到Session
+            HttpSession session = request.getSession();
+            session.setAttribute("user", user);
+            session.setAttribute("username", user.getUsername());
+            session.setAttribute("userId", user.getId());
+            
+            // 跳转到首页
+            response.sendRedirect(request.getContextPath() + "/index.jsp");
+        } else {
+            request.setAttribute("errorMessage", "用户名或密码错误！");
+            request.getRequestDispatcher("/pages/user/login.jsp").forward(request, response);
+        }
+    }
+    
+    private void processRegister(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        String email = request.getParameter("email");
+        String phone = request.getParameter("phone");
+        
+        // 检查用户名是否已存在
+        if (userDAO.checkUsernameExists(username)) {
+            request.setAttribute("errorMessage", "用户名已存在！");
+            request.getRequestDispatcher("/pages/user/register.jsp").forward(request, response);
+            return;
+        }
+        
+        User user = new User(username, password, email, phone, 0);
+        boolean success = userDAO.register(user);
+        
+        if (success) {
+            request.setAttribute("successMessage", "注册成功！请登录");
+            request.getRequestDispatcher("/pages/user/login.jsp").forward(request, response);
+        } else {
+            request.setAttribute("errorMessage", "注册失败，请重试！");
+            request.getRequestDispatcher("/pages/user/register.jsp").forward(request, response);
+        }
+    }
+    
+    private void logout(HttpServletRequest request, HttpServletResponse response) 
+            throws IOException {
+        HttpSession session = request.getSession();
+        session.invalidate(); // 销毁session
+        response.sendRedirect(request.getContextPath() + "/index.jsp");
+    }
+}
