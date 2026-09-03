@@ -54,7 +54,42 @@ http://localhost:8081/MovieTicketingSystem
 **首次部署后通过注册功能创建测试账号**（管理员账号如需初始化，请按你项目实际设计执行）。
 
 ## 项目截图
+### 用户端
 
+#### 登录
+![登录页](docs/images/1.png)
+
+#### 注册
+![注册页](docs/images/2.png)
+
+#### 系统首页
+![系统首页](docs/images/3.png)
+
+#### 在线选座购票
+![选座购票](docs/images/4.png)
+
+#### 订单支付
+![订单支付](docs/images/5.png)
+
+#### 我的订单
+![我的订单](docs/images/6.png)
+
+#### 影片评价
+![影片评价](docs/images/7.png)
+
+### 管理端
+
+#### 管理员首页（数据看板）
+![管理员首页](docs/images/8.png)
+
+#### 电影管理
+![电影管理](docs/images/9.png)
+
+#### 编辑电影信息
+![编辑电影](docs/images/10.png)
+
+#### 排期管理
+![排期管理](docs/images/11.png)
 
 
 ## 目录结构
