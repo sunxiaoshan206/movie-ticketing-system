@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>测试页面</title>
+</head>
+<body>
+    <h1 style="color: green;">✅ 静态HTML测试成功！</h1>
+    <p>Tomcat工作正常，可以访问静态HTML文件。</p>
+    <p>测试链接：</p>
+    <ul>
+        <li><a href="test.html">这个页面</a></li>
+        <li><a href="simple.jsp">简单JSP测试</a></li>
+    </ul>
+    <p>时间：<span id="time"></span></p>
+    <script>
+        document.getElementById('time').textContent = new Date().toLocaleString();
+    </script>
+</body>
+</html>
