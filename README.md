@@ -34,7 +34,7 @@ git clone https://github.com/sunxiaoshan206/movie-ticketing-system.git
 cd movie-ticketing-system
 
 # 2. 准备 MySQL，导入项目中的 SQL 文件
-#    数据库名：movie_ticket
+#    数据库名：movie_ticket_system
 
 # 3. 修改数据库连接配置（jdbc.properties 或同目录文件）
 #    jdbc.url=jdbc:mysql://localhost:3306/movie_ticket
